@@ -16,15 +16,18 @@ var cancelled;
 var reason;
 var uuid
 
-	// generatepayload()
-	// status()
+	// GeneratePayload()
+	// Status()
 	// login()
 	// authenticate()
-	// del()
+	// DeletePayload()
+	// checkcreate()
+	// checkcancel()
+	// checkcash()
 
 
 //Generate a payment Transaction
-function generatepayload() {
+async function GeneratePayload() {
 
 	DestinationAddress = String(Address)
 	
@@ -67,7 +70,7 @@ request(options, function (error, response, body) {
 }
 
 // only works wiht Body
-function status(){
+async function Status(){
 	
 	var data = String(PayloadUUID);
 
@@ -96,12 +99,10 @@ function status(){
 
 
 // Login/SignIn/Sign T&C's
-function login(){
+async function login(){
 	
-	
-	 destinationAddress = String(Address);
+	destinationAddress = String(Address);
 	 
-	
 	var jar = request.jar();
 	
 	var options = {
@@ -143,13 +144,12 @@ function login(){
 	  
 	//console.log('\x1b[34m%s\x1b[0m',"QRcode URL: " + qr);
 	//console.log('\x1b[34m%s\x1b[0m',"UUID: " + Payload);
-	
-
 	});
 }
 
  
-//Authenticate XUMM Login
+//Authenticate XUMM Login 
+//Get Status
 async function authenticate(){
 	
 	// payload uuid from XUMM Login
@@ -181,7 +181,8 @@ async function authenticate(){
 	  
 }
 
-function del(){
+//delete Payload
+async function DeletePayload(){
 	
 	var data = String(PayloadUUID);
 
@@ -212,3 +213,139 @@ function del(){
 	});
 }
 
+//Create Check
+
+async function checkcreate(){
+    var Note = "test";
+    var options = {
+        method: 'POST',
+        url: 'https://xumm.app/api/v1/platform/payload',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': apikey,
+          'x-api-secret': apisecret,
+          authorization: 'Bearer' + apisecret
+        },
+        body: { 
+                    "options": {
+                        "submit": true,
+                        "return_url": {
+                            "web": "",
+                            "app": ""
+                                    }
+                                },
+    "txjson": {
+        "TransactionType": "CheckCreate",
+        "Destination": Address, 
+            "Amount": value,
+            "DestinationTag": dstTag,
+        "Fee": "12",
+        "Memos": [
+            {
+              "Memo": {
+                "MemoType": Buffer.from('KYC', 'utf8').toString('hex').toUpperCase(),
+                "MemoData": Buffer.from(Note, 'utf8').toString('hex').toUpperCase()
+              }
+            }
+          ]
+      }
+     
+    },
+    json: true,
+    };
+    
+    request(options, async function (error, response, body) {
+    if (error) throw new Error(error);
+    var QR = body.refs.qr_png;
+    var PayloadUUID = body.uuid;
+    console.log(QR); // URL to qr.png code only.
+    console.log(PayloadUUID); // Payload UUID.
+    
+    })
+
+}
+
+// Check Cancel
+async function checkcancel(){
+    var Note = "test";
+    var options = {
+        method: 'POST',
+        url: 'https://xumm.app/api/v1/platform/payload',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': apikey,
+          'x-api-secret': apisecret,
+          authorization: 'Bearer' + apisecret
+        },
+        body: { 
+                    "options": {
+                        "submit": true,
+                        "return_url": {
+                            "web": "",
+                            "app": ""
+                                    }
+                                },
+    "txjson": {
+        "TransactionType": "CheckCancel",
+        "CheckID": "A6C390310C60A9A0E68B1DC101EBF4F8F1775B735102E24C29478F6A8608A205"
+        
+      }
+     
+    },
+    json: true,
+    };
+    
+    request(options, async function (error, response, body) {
+        if (error) throw new Error(error);
+        var QR = body.refs.qr_png;
+        var PayloadUUID = body.uuid;
+        console.log(QR); // URL to qr.png code only.
+        console.log(PayloadUUID); // Payload UUID.
+        
+        })
+    
+    }
+
+//Cash Check
+
+async function checkcash(){
+        var Note = "test";
+        var options = {
+            method: 'POST',
+            url: 'https://xumm.app/api/v1/platform/payload',
+            headers: {
+              'content-type': 'application/json',
+              'x-api-key': apikey,
+              'x-api-secret': apisecret,
+              authorization: 'Bearer' + apisecret
+            },
+            body: { 
+                        "options": {
+                            "submit": true,
+                            "return_url": {
+                                "web": "",
+                                "app": ""
+                                        }
+                                    },
+        "txjson": {
+            "TransactionType": "CheckCash",
+            "CheckID": "205B32B747E2571BDBAAF27DF1F0DF0CFD75F791D560BB98510BC156D5DD9BBA",
+            "Fee": "12",
+            "Amount":  "1" 
+            
+          }
+         
+        },
+        json: true,
+        };
+        
+        request(options, async function (error, response, body) {
+            if (error) throw new Error(error);
+            var QR = body.refs.qr_png;
+            var PayloadUUID = body.uuid;
+            console.log(QR); // URL to qr.png code only.
+            console.log(PayloadUUID); // Payload UUID.
+            
+            })
+        
+        }

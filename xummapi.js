@@ -24,6 +24,10 @@ var uuid
 	// checkcreate()
 	// checkcancel()
 	// checkcash()
+  // setTrustline()
+  // setGravatar()
+  //paymentIOU()
+  // CrossCurrency()
 
 
 //Generate a payment Transaction
@@ -256,10 +260,7 @@ async function checkcreate(){
     
     request(options, async function (error, response, body) {
     if (error) throw new Error(error);
-    var QR = body.refs.qr_png;
-    var PayloadUUID = body.uuid;
-    console.log(QR); // URL to qr.png code only.
-    console.log(PayloadUUID); // Payload UUID.
+    console.log(body); // Payload UUID.
     
     })
 
@@ -297,10 +298,8 @@ async function checkcancel(){
     
     request(options, async function (error, response, body) {
         if (error) throw new Error(error);
-        var QR = body.refs.qr_png;
-        var PayloadUUID = body.uuid;
-        console.log(QR); // URL to qr.png code only.
-        console.log(PayloadUUID); // Payload UUID.
+    
+        console.log(body); // Payload UUID.
         
         })
     
@@ -341,11 +340,222 @@ async function checkcash(){
         
         request(options, async function (error, response, body) {
             if (error) throw new Error(error);
-            var QR = body.refs.qr_png;
-            var PayloadUUID = body.uuid;
-            console.log(QR); // URL to qr.png code only.
-            console.log(PayloadUUID); // Payload UUID.
+
+            console.log(body); // Payload UUID.
             
             })
         
         }
+
+/* set trust line*/
+ async function setTrustline(){
+
+var trustValue = '' // value/amount to trust issuer
+var setCurrency = '' //currency code
+var DestinationAddress = '' // destination address
+var Address = ''; // issuer;
+	
+        var options = {
+          method: 'POST',
+          url: 'https://xumm.app/api/v1/platform/payload',
+          headers: {
+            'content-type': 'application/json',
+            'x-api-key': apikey,
+            'x-api-secret': apisecret,
+            authorization: 'Bearer' + apisecret
+          },
+          body: {
+            options: {
+              submit: true,
+              expire: 5,
+              return_url: {
+                web: "",
+                app: ""
+                  }    
+                },
+              txjson: {
+                TransactionType: 'TrustSet',
+                Account: dstAddress,
+                Fee: '12',
+                Flags: 131072,
+                //LastLedgerSequence: 8007750,
+                LimitAmount: {
+                currency: setCurrency,
+                issuer: srcAddress,
+                value: trustValue
+                }
+              }
+              },
+            json: true,
+            jar: 'JAR'
+          };
+
+          request(options, function (error, response, body) {
+            if (error) throw new Error(error);        
+            console.log(body); // Payload UUID.        
+            })
+        }
+/* set Gravatar */
+// not tested on xumm
+async function setGravatar(){
+          var md5 = require('md5');
+          var hash = md5('')
+          var res = hash.toUpperCase()
+          var Address = '';
+          var options = {
+            method: 'POST',
+            url: 'https://xumm.app/api/v1/platform/payload',
+            headers: {
+              'content-type': 'application/json',
+              'x-api-key': apikey,
+              'x-api-secret': apisecret,
+              authorization: 'Bearer' + apisecret
+            },
+            body: {
+              "options": {
+                  "submit": true,
+                  "return_url": {
+                    "web": "",
+                    "app": ""
+                      }    
+                  },
+                "txjson": {
+                  TransactionType: 'AccountSet',
+                  Account: Address,
+                  Fee: '12',
+                  EmailHash: res
+                }
+                },
+            json: true,
+            jar: 'JAR'
+            };
+          
+            request(options, function (error, response, body) {
+            if (error) throw new Error(error);
+            
+            console.log(body)
+          
+            });
+        } 
+
+/* Send IOU PAyment */
+
+async function paymentIOU(){
+
+var options = {
+  method: 'POST',
+  url: 'https://xumm.app/api/v1/platform/payload',
+  headers: {
+    'content-type': 'application/json',
+    'x-api-key': apikey,
+    'x-api-secret': apisecret,
+    authorization: 'Bearer' + apisecret
+  },
+  body: {
+      "options": {
+            "submit": true,
+            "expire": 5,
+            "return_url": {
+                "web": "", 
+                "app": ""
+                    }    
+              },
+          "txjson": {
+          "TransactionType": "Payment",
+          "Destination": "", 
+          "DestinationTag": "",
+          "Fee": "12",
+            "Amount": {
+              "value": "10",
+            "currency": "",
+            "issuer": "",
+            },
+            "Memos": [
+            {
+              "Memo": {
+              "MemoType": Buffer.from('Aud', 'utf8').toString('hex').toUpperCase(),
+              "MemoData": Buffer.from("Note", 'utf8').toString('hex').toUpperCase()
+              }
+            }
+            ]
+        }
+    },
+  json: true,
+  jar: 'JAR'
+};
+request(options, function (error, response, body) {
+  if (error) throw new Error(error);
+  console.log(body)
+
+})
+}
+
+/* Cross Currerncy*/
+async function CrossCurrency(){
+var source = ""
+var currency = ""
+var Note = "Cross Currecny Test" //"IOU Payment from Porta Para XRPL"
+var Amount = "10"
+var options = {
+          method: 'POST',
+          url: 'https://xumm.app/api/v1/platform/payload',
+          headers: {
+          'content-type': 'application/json',
+          'x-api-key': apikey,
+          'x-api-secret': apisecret,
+          authorization: 'Bearer' + apisecret
+          },
+          body: {
+            "options": {
+              "submit": true,
+              "return_url": {
+                "web": "",
+                "app": ""
+                  }    
+                },
+                "txjson": {
+                  "TransactionType": "Payment",
+                  "Destination": source, 
+                  //"DestinationTag": "3",
+                  "Fee": "12",
+                    "Amount": {
+                      "value": Amount,
+                    "currency": currency,
+                    "issuer": "",
+                    },
+                    "Flags": 2147614720,
+                    "SendMax": {
+                    "currency": "GBP",
+                    "issuer": "",
+                    "value": Amount
+                    },
+                    "Memos": [
+                      {
+                        "Memo": {
+                        "MemoType": Buffer.from('IOU', 'utf8').toString('hex').toUpperCase(),
+                        "MemoData": Buffer.from(Note, 'utf8').toString('hex').toUpperCase()
+                        }
+                      }
+                      ]
+                   
+                  }
+                
+            },
+          json: true,
+          jar: 'JAR'
+        };
+      
+        request(options, async function (error, response, body) {
+          if (error) throw new Error(error);
+          
+          UUID = body.uuid;
+          PQR = body.refs.qr_png;
+          module.exports.UUID = body.uuid;
+          module.exports.PQR = body.refs.qr_png;
+          //console.log(body);
+          
+        console.log('\x1b[34m%s\x1b[0m',"PQRcode URL: " + PQR);
+        console.log('\x1b[34m%s\x1b[0m',"UUID: " + UUID);
+        
+        })
+      }
